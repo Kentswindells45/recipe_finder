@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import 'dart:io';
 
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
@@ -9,27 +10,45 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget leadingWidget;
+    if (recipe.imagePath != null && recipe.imagePath!.isNotEmpty) {
+      if (recipe.imagePath!.startsWith('/')) {
+        // It's a file path
+        leadingWidget = ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.file(
+            File(recipe.imagePath!),
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        // It's an asset path
+        leadingWidget = ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            recipe.imagePath!,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+          ),
+        );
+      }
+    } else {
+      leadingWidget = const Icon(
+        Icons.restaurant_menu,
+        size: 40,
+        color: Colors.deepPurple,
+      );
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading:
-            recipe.imagePath != null
-                ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    recipe.imagePath!,
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                  ),
-                )
-                : const Icon(
-                  Icons.restaurant_menu,
-                  size: 40,
-                  color: Colors.deepPurple,
-                ),
+        leading: leadingWidget,
         title: Text(
           recipe.title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

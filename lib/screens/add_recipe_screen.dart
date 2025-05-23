@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/recipe.dart';
 import '../providers/recipe_provider.dart';
-import 'package:geolocator/geolocator.dart';
 import '../services/notification_service.dart';
 
 class AddRecipeScreen extends StatefulWidget {
@@ -32,7 +32,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     }
   }
 
-  // Request location permission and get current location
   Future<void> _getLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -154,7 +153,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                             : null,
                 onSaved: (value) => _description = value!,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   ElevatedButton.icon(
@@ -175,6 +174,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     ),
                 ],
               ),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saveRecipe,
                 child: const Text('Save Recipe'),

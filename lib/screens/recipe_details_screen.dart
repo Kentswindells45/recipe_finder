@@ -14,24 +14,40 @@ class RecipeDetailScreen extends StatelessWidget {
       appBar: AppBar(title: Text(recipe.title)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
-            if (recipe.imagePath != null)
-              Image.file(
-                File(recipe.imagePath!),
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            if (recipe.imagePath != null && recipe.imagePath!.isNotEmpty)
+              recipe.imagePath!.startsWith('/')
+                  ? Image.file(
+                    File(recipe.imagePath!),
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                  : Image.asset(
+                    recipe.imagePath!,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
             const SizedBox(height: 16),
             Text(recipe.description, style: const TextStyle(fontSize: 16)),
             if (recipe.latitude != null && recipe.longitude != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: Text(
-                  'Location: (${recipe.latitude!.toStringAsFixed(4)}, ${recipe.longitude!.toStringAsFixed(4)})',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.green,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${recipe.latitude!.toStringAsFixed(4)}, ${recipe.longitude!.toStringAsFixed(4)})',
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
                 ),
               ),
           ],
