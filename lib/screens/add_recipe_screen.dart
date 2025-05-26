@@ -8,7 +8,10 @@ import '../providers/recipe_provider.dart';
 import '../services/notification_service.dart';
 
 class AddRecipeScreen extends StatefulWidget {
-  const AddRecipeScreen({super.key});
+  final Recipe? recipe;
+  final int? recipeIndex;
+
+  const AddRecipeScreen({super.key, this.recipe, this.recipeIndex});
 
   @override
   State<AddRecipeScreen> createState() => _AddRecipeScreenState();
@@ -21,6 +24,36 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   File? _imageFile;
   double? _latitude;
   double? _longitude;
+
+  final List<String> _categories = [
+    'Breakfast',
+    'Lunch',
+    'Dinner',
+    'Dessert',
+    'Snack',
+    'Drink',
+    'Other',
+  ];
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.recipe != null) {
+      _title = widget.recipe!.title;
+      _description = widget.recipe!.description;
+      // Only set _imageFile if the path is a local file, not a URL
+      if (widget.recipe!.imagePath != null &&
+          !widget.recipe!.imagePath!.startsWith('http')) {
+        _imageFile = File(widget.recipe!.imagePath!);
+      } else {
+        _imageFile = null;
+      }
+      _latitude = widget.recipe!.latitude;
+      _longitude = widget.recipe!.longitude;
+      _selectedCategory = widget.recipe!.category;
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -70,15 +103,26 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void _saveRecipe() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Provider.of<RecipeProvider>(context, listen: false).addRecipe(
-        Recipe(
-          title: _title,
-          description: _description,
-          imagePath: _imageFile?.path,
-          latitude: _latitude,
-          longitude: _longitude,
-        ),
+      final provider = Provider.of<RecipeProvider>(context, listen: false);
+      if (provider.containsRecipeTitle(_title)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Recipe "$_title" already exists!')),
+        );
+        return;
+      }
+      final newRecipe = Recipe(
+        title: _title,
+        description: _description,
+        imagePath: _imageFile?.path,
+        latitude: _latitude,
+        longitude: _longitude,
+        category: _selectedCategory,
       );
+      if (widget.recipeIndex != null) {
+        provider.updateRecipe(widget.recipeIndex!, newRecipe);
+      } else {
+        provider.addRecipe(newRecipe);
+      }
       NotificationService.showNotification(
         'Recipe Added',
         '$_title was added!',
@@ -104,6 +148,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     _imageFile != null
                         ? Image.file(
                           _imageFile!,
+                          height: 180,
+                          fit: BoxFit.cover,
+                        )
+                        : (widget.recipe != null &&
+                            widget.recipe!.imagePath != null &&
+                            widget.recipe!.imagePath!.startsWith('http'))
+                        ? Image.network(
+                          widget.recipe!.imagePath!,
                           height: 180,
                           fit: BoxFit.cover,
                         )
@@ -135,6 +187,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               const SizedBox(height: 16),
               // Title field
               TextFormField(
+                initialValue: _title,
                 decoration: const InputDecoration(labelText: 'Title'),
                 validator:
                     (value) =>
@@ -144,6 +197,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               const SizedBox(height: 16),
               // Description field
               TextFormField(
+                initialValue: _description,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
                 validator:
@@ -173,6 +227,23 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       ),
                     ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              // Category dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items:
+                    _categories
+                        .map(
+                          (cat) =>
+                              DropdownMenuItem(value: cat, child: Text(cat)),
+                        )
+                        .toList(),
+                onChanged: (val) => setState(() => _selectedCategory = val),
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty ? 'Select a category' : null,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
