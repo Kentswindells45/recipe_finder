@@ -6,6 +6,7 @@ import 'recipe_details_screen.dart';
 import 'add_recipe_screen.dart';
 import '../services/recipe_api_service.dart';
 import '../services/notification_service.dart';
+import 'settings_screen.dart';
 
 /// The main screen displaying a list of recipes.
 class HomeScreen extends StatefulWidget {
@@ -152,7 +153,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recipe Finder'),
+        title: const Text(
+          'Recipe Finder',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+            fontSize: 22,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 3,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: Icon(_showFavorites ? Icons.favorite : Icons.favorite_border),
@@ -160,6 +172,16 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 _showFavorites = !_showFavorites;
               });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings & About',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
             },
           ),
         ],
@@ -316,15 +338,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AddRecipeScreen()),
           );
         },
-        child: const Icon(Icons.add),
-        tooltip: 'Add Recipe',
+        icon: const Icon(Icons.add),
+        label: const Text('Add Recipe'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

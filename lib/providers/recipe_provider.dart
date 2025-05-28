@@ -91,4 +91,21 @@ class RecipeProvider with ChangeNotifier {
     allCategories.removeWhere((cat) => cat.isEmpty);
     return allCategories;
   }
+
+  bool _hapticFeedback = false;
+
+  bool get hapticFeedback => _hapticFeedback;
+
+  Future<void> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hapticFeedback = prefs.getBool('hapticFeedback') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> setHapticFeedback(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hapticFeedback', value);
+    _hapticFeedback = value;
+    notifyListeners();
+  }
 }

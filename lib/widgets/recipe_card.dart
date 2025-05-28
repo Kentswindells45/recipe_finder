@@ -18,81 +18,55 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget leadingWidget;
-    if (recipe.imagePath != null && recipe.imagePath!.isNotEmpty) {
-      if (recipe.imagePath!.startsWith('http')) {
-        leadingWidget = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            recipe.imagePath!,
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
-          ),
-        );
-      } else if (recipe.imagePath!.startsWith('/')) {
-        // File path
-        leadingWidget = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.file(
-            File(recipe.imagePath!),
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
-          ),
-        );
-      } else {
-        // Asset path
-        leadingWidget = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
-            recipe.imagePath!,
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
-          ),
-        );
-      }
-    } else {
-      leadingWidget = const Icon(
-        Icons.restaurant_menu,
-        size: 40,
-        color: Colors.deepPurple,
-      );
-    }
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
       child: ListTile(
-        leading: leadingWidget,
+        leading:
+            recipe.imagePath?.isNotEmpty == true
+                ? ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    recipe.imagePath!,
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                  ),
+                )
+                : const Icon(
+                  Icons.fastfood,
+                  size: 40,
+                  color: Colors.deepPurple,
+                ),
         title: Text(
           recipe.title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        subtitle: Row(
           children: [
-            if (recipe.category != null)
-              Text(
-                recipe.category!,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.deepPurple,
-                  fontWeight: FontWeight.w600,
+            if (recipe.category != null && recipe.category!.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  recipe.category ?? '',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.deepPurple,
+                  ),
                 ),
               ),
             Text(
-              recipe.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              recipe.origin ?? '',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            // ...origin/location if needed...
           ],
         ),
-        onTap: onTap,
-        onLongPress: onLongPress,
         trailing: IconButton(
           icon: Icon(
             recipe.isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -107,6 +81,8 @@ class RecipeCard extends StatelessWidget {
             provider.toggleFavorite(index);
           },
         ),
+        onTap: onTap,
+        onLongPress: onLongPress,
       ),
     );
   }

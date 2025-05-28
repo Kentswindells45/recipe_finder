@@ -4,9 +4,11 @@ import 'providers/recipe_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await [
     Permission.camera,
     Permission.location,
@@ -40,3 +42,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

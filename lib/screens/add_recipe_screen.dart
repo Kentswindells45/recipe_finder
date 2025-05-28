@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import '../models/recipe.dart';
 import '../providers/recipe_provider.dart';
 import '../services/notification_service.dart';
@@ -127,6 +128,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         'Recipe Added',
         '$_title was added!',
       );
+      // Haptic feedback is always enabled here; add a toggle if needed
+      HapticFeedback.mediumImpact();
       Navigator.pop(context);
     }
   }
