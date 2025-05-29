@@ -45,6 +45,8 @@ dependencies:
   cloud_firestore: ^4.17.2
   firebase_core: ^2.32.0
   lottie: ^3.1.0 # For adding animations
+  package_info_plus: 8.3.0
+  animated_text_kit: ^4.2.2
 
   # Add more as needed, e.g., cached_network_image for images
 
@@ -73,7 +75,8 @@ flutter_icons:
 flutter:
   uses-material-design: true
   assets:
-    - lib/assets/splash.json
+    - lib/assets/bg_anim.json
+    - lib/assets/pic.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
