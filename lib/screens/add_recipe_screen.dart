@@ -129,7 +129,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         '$_title was added!',
       );
       // Haptic feedback is always enabled here; add a toggle if needed
-      HapticFeedback.mediumImpact();
+      Provider.of<RecipeProvider>(context, listen: false);
+      if (provider.hapticFeedback) {
+        HapticFeedback.mediumImpact();
+      }
       Navigator.pop(context);
     }
   }

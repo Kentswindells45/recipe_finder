@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/recipe_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,9 +17,11 @@ void main() async {
     Permission.storage,
   ].request();
   await NotificationService.init();
+  final recipeProvider = RecipeProvider();
+  await recipeProvider.loadSettings();
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => RecipeProvider())],
+      providers: [ChangeNotifierProvider(create: (_) => recipeProvider)],
       child: const MyApp(),
     ),
   );
@@ -38,8 +41,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true, // Enables Material 3 for modern look
       ),
-      home: const HomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const HomeScreen(),
+      },
     );
   }
 }
-
