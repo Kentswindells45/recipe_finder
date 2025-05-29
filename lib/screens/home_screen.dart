@@ -111,8 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         provider.addRecipe(recipe);
                         NotificationService.showNotification(
-                          'Recipe Added',
-                          '${recipe.title} was added!',
+                          title: 'Recipe Added',
+                          body: '${recipe.title} was added!',
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('${recipe.title} saved!')),

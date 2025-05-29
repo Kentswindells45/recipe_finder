@@ -125,8 +125,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         provider.addRecipe(newRecipe);
       }
       NotificationService.showNotification(
-        'Recipe Added',
-        '$_title was added!',
+        title: 'Recipe Added',
+        body: '$_title was added!',
       );
       // Haptic feedback is always enabled here; add a toggle if needed
       Provider.of<RecipeProvider>(context, listen: false);

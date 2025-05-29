@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/recipe.dart';
-import 'dart:io';
 import 'package:provider/provider.dart';
 import '../providers/recipe_provider.dart';
 
@@ -27,11 +27,15 @@ class RecipeCard extends StatelessWidget {
             recipe.imagePath?.isNotEmpty == true
                 ? ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    recipe.imagePath!,
+                  child: CachedNetworkImage(
+                    imageUrl: recipe.imagePath!,
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
+                    placeholder:
+                        (context, url) => const CircularProgressIndicator(),
+                    errorWidget:
+                        (context, url, error) => const Icon(Icons.broken_image),
                   ),
                 )
                 : const Icon(
