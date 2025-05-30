@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/recipe.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
@@ -13,11 +14,27 @@ class RecipeDetailScreen extends StatelessWidget {
     Widget? imageWidget;
     if (recipe.imagePath != null && recipe.imagePath!.isNotEmpty) {
       if (recipe.imagePath!.startsWith('http')) {
-        imageWidget = Image.network(
-          recipe.imagePath!,
+        imageWidget = CachedNetworkImage(
+          imageUrl: recipe.imagePath!,
           height: 200,
           width: double.infinity,
           fit: BoxFit.cover,
+          placeholder:
+              (context, url) => Container(
+                height: 200,
+                color: Colors.grey[200],
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+          errorWidget:
+              (context, url, error) => Container(
+                height: 200,
+                color: Colors.grey[200],
+                child: const Icon(
+                  Icons.broken_image,
+                  size: 48,
+                  color: Colors.grey,
+                ),
+              ),
         );
       } else if (recipe.imagePath!.startsWith('/')) {
         imageWidget = Image.file(
@@ -51,6 +68,7 @@ class RecipeDetailScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
+          physics: const BouncingScrollPhysics(), // Smooth scrolling
           children: [
             if (imageWidget != null)
               ClipRRect(

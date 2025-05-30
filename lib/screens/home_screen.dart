@@ -4,9 +4,9 @@ import '../providers/recipe_provider.dart';
 import '../widgets/recipe_card.dart';
 import 'recipe_details_screen.dart';
 import 'add_recipe_screen.dart';
-import '../services/recipe_api_service.dart';
 import '../services/notification_service.dart';
 import 'settings_screen.dart';
+import '../widgets/online_search_delegate.dart'; // Make sure this is the correct path
 
 /// The main screen displaying a list of recipes.
 class HomeScreen extends StatefulWidget {
@@ -19,119 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String? _selectedCategory;
-  final RecipeApiService _apiService = RecipeApiService();
   bool _showFavorites = false;
-
-  Future<void> _searchOnline(String query) async {
-    final results = await _apiService.searchRecipes(query);
-    if (results.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No recipes found online.')));
-      return;
-    }
-    // Show results in a dialog or a new screen
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text('Online Recipes'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: results.length,
-                itemBuilder: (context, index) {
-                  final recipe = results[index];
-                  return ListTile(
-                    leading:
-                        recipe.imagePath != null && recipe.imagePath!.isNotEmpty
-                            ? Image.network(
-                              recipe.imagePath!,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            )
-                            : null,
-                    title: Text(recipe.title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recipe.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (recipe.origin != null && recipe.origin!.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.public,
-                                  size: 16,
-                                  color: Colors.green,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    'Origin: ${recipe.origin}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.green,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.save_alt,
-                        color: Colors.deepPurple,
-                      ),
-                      tooltip: 'Save to My Recipes',
-                      onPressed: () {
-                        final provider = Provider.of<RecipeProvider>(
-                          context,
-                          listen: false,
-                        );
-                        if (provider.containsRecipeTitle(recipe.title)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Recipe "${recipe.title}" already exists!',
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-                        provider.addRecipe(recipe);
-                        NotificationService.showNotification(
-                          title: 'Recipe Added',
-                          body: '${recipe.title} was added!',
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${recipe.title} saved!')),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +98,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.cloud),
                   tooltip: 'Search Online',
-                  onPressed: () => _searchOnline(_searchQuery),
+                  onPressed: () async {
+                    final provider = Provider.of<RecipeProvider>(
+                      context,
+                      listen: false,
+                    );
+                    await showSearch(
+                      context: context,
+                      delegate: OnlineRecipeSearchDelegate(
+                        onAddFavorite: (recipe) {
+                          provider.addRecipe(recipe);
+                          NotificationService.showNotification(
+                            title: 'Recipe Added',
+                            body: '${recipe.title} was added!',
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${recipe.title} saved!')),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

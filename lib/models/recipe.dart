@@ -5,8 +5,8 @@ class Recipe {
   final double? latitude;
   final double? longitude;
   final String? origin;
-  bool isFavorite; // <-- Change made here
-  final String? category; // <-- Add this
+  bool isFavorite;
+  final String? category;
 
   Recipe({
     required this.title,
@@ -16,8 +16,21 @@ class Recipe {
     this.longitude,
     this.origin,
     this.isFavorite = false,
-    this.category, // <-- Add this
+    this.category,
   });
 
-  // Add toJson/fromJson if you use them for persistence
+  // Factory constructor for creating a Recipe from TheMealDB API JSON
+  factory Recipe.fromJson(Map<String, dynamic> json) {
+    return Recipe(
+      title: json['strMeal'] ?? '',
+      description: json['strInstructions'] ?? '',
+      imagePath: json['strMealThumb'],
+      origin: json['strArea'],
+      category: json['strCategory'],
+      // latitude and longitude are not provided by TheMealDB, so leave as null
+      // isFavorite is always false for new online recipes
+    );
+  }
+
+  // Optionally, add toJson if you use it for persistence
 }
