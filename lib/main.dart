@@ -6,6 +6,7 @@ import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,8 @@ void main() async {
   await NotificationService.init();
   final recipeProvider = RecipeProvider();
   await recipeProvider.loadSettings();
+  await Hive.initFlutter();
+  await Hive.openBox<List>('searchHistoryBox');
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => recipeProvider)],
