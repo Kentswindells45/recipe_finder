@@ -1,6 +1,8 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,10 +17,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _loadHaptic();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _loadHaptic() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _hapticFeedback = prefs.getBool('hapticFeedback') ?? false;
@@ -35,18 +37,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.themeMode == ThemeMode.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings & About')),
+      appBar: AppBar(
+        title: const Text('Settings & About'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
       body: ListView(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               'General Settings',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: Colors.deepPurple,
+                color: colorScheme.primary,
               ),
             ),
           ),
@@ -54,29 +64,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Haptic Feedback on Add'),
             value: _hapticFeedback,
             onChanged: _updateHaptic,
-            secondary: const Icon(Icons.vibration),
+            secondary: Icon(Icons.vibration, color: colorScheme.primary),
+          ),
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            value: isDark,
+            onChanged: (val) {
+              themeProvider.toggleTheme(val);
+            },
+            secondary: Icon(Icons.dark_mode, color: colorScheme.primary),
           ),
           const Divider(),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               'About',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: Colors.deepPurple,
+                color: colorScheme.primary,
               ),
             ),
           ),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Recipe Finder'),
-            subtitle: Text(
+          ListTile(
+            leading: Icon(Icons.info_outline, color: colorScheme.primary),
+            title: const Text('Recipe Finder'),
+            subtitle: const Text(
               'Version 1.0.0\nA modern app to manage and sync your favorite recipes.',
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.email_outlined),
+            leading: Icon(Icons.email_outlined, color: colorScheme.primary),
             title: const Text('Contact Support'),
             subtitle: const Text('opppongkevin1@gmail.com'),
             onTap: () {

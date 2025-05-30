@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/recipe_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
@@ -24,7 +25,10 @@ void main() async {
   await Hive.openBox<List>('searchHistoryBox');
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => recipeProvider)],
+      providers: [
+        ChangeNotifierProvider(create: (_) => recipeProvider),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -36,14 +40,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       title: 'Recipe Finder',
       debugShowCheckedModeBanner:
           false, // Removes the debug banner for professionalism
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true, // Enables Material 3 for modern look
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeProvider.themeMode,
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
