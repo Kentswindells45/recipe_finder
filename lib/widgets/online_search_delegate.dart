@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/recipe.dart';
@@ -7,6 +8,9 @@ class OnlineRecipeSearchDelegate extends SearchDelegate<Recipe?> {
   final void Function(Recipe) onAddFavorite;
   static const String _boxName = 'searchHistoryBox';
   static const String _key = 'history';
+
+  Timer? _debounce;
+  String _debouncedQuery = '';
 
   OnlineRecipeSearchDelegate({required this.onAddFavorite});
 
@@ -166,16 +170,34 @@ class OnlineRecipeSearchDelegate extends SearchDelegate<Recipe?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    // Cancel previous debounce if still active
+    _debounce?.cancel();
+
+    // Start a new debounce
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      if (_debouncedQuery != query) {
+        _debouncedQuery = query;
+        // Call setState to rebuild with the new debounced query
+        // In SearchDelegate, use showSuggestions to trigger a rebuild
+        showSuggestions(context);
+      }
+    });
+
+    // Use _debouncedQuery for API calls
+    final currentQuery = _debouncedQuery;
+
     return FutureBuilder<List<String>>(
       future: _getHistory(),
       builder: (context, snapshot) {
         final suggestions =
             snapshot.data
-                ?.where((h) => h.toLowerCase().contains(query.toLowerCase()))
+                ?.where(
+                  (h) => h.toLowerCase().contains(currentQuery.toLowerCase()),
+                )
                 .toList() ??
             [];
 
-        if (query.isEmpty) {
+        if (currentQuery.isEmpty) {
           return ListView(
             children: [
               if (suggestions.isEmpty)
@@ -195,7 +217,7 @@ class OnlineRecipeSearchDelegate extends SearchDelegate<Recipe?> {
         }
 
         return FutureBuilder<List<Recipe>>(
-          future: RecipeApiService().searchRecipes(query),
+          future: RecipeApiService().searchRecipes(currentQuery),
           builder: (context, snapshot) {
             final List<Widget> children = [
               if (suggestions.isNotEmpty)
