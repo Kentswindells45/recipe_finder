@@ -115,46 +115,107 @@ class OnlineRecipeSearchDelegate extends SearchDelegate<Recipe?> {
                       },
                     ),
                     onTap: () {
-                      showDialog(
+                      showModalBottomSheet(
                         context: context,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                        ),
+                        isScrollControlled: true,
                         builder:
-                            (_) => AlertDialog(
-                              title: Text(recipe.title),
-                              content: SingleChildScrollView(
+                            (_) => Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: SingleChildScrollView(
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (recipe.imagePath != null)
-                                      Image.network(
-                                        recipe.imagePath!,
-                                        height: 180,
-                                        fit: BoxFit.cover,
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Image.network(
+                                          recipe.imagePath!,
+                                          height: 220,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
-                                    const SizedBox(height: 8),
-                                    if (recipe.category != null)
-                                      Text('Category: ${recipe.category!}'),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            recipe.title,
+                                            style:
+                                                Theme.of(
+                                                  context,
+                                                ).textTheme.titleLarge,
+                                          ),
+                                        ),
+                                        if (recipe.category != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 8.0,
+                                            ),
+                                            child: Chip(
+                                              label: Text(recipe.category!),
+                                              backgroundColor:
+                                                  Colors.deepPurple.shade50,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                     if (recipe.origin != null)
-                                      Text('Origin: ${recipe.origin!}'),
-                                    const SizedBox(height: 8),
-                                    Text(recipe.description),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.place,
+                                              size: 16,
+                                              color: Colors.deepPurple,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              recipe.origin!,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    const Divider(height: 24),
+                                    Text(
+                                      recipe.description,
+                                      style: const TextStyle(fontSize: 15),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(
+                                              Icons.favorite_border,
+                                            ),
+                                            label: const Text(
+                                              'Add to Favorites',
+                                            ),
+                                            onPressed: () {
+                                              onAddFavorite(recipe);
+                                              Navigator.pop(context);
+                                              close(context, recipe);
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Close'),
-                                ),
-                                ElevatedButton.icon(
-                                  icon: const Icon(Icons.favorite_border),
-                                  label: const Text('Add to Favorites'),
-                                  onPressed: () {
-                                    onAddFavorite(recipe);
-                                    Navigator.pop(context);
-                                    close(context, recipe);
-                                  },
-                                ),
-                              ],
                             ),
                       );
                     },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../providers/recipe_provider.dart';
 import '../widgets/recipe_card.dart';
 import 'recipe_details_screen.dart';
@@ -20,6 +21,20 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String? _selectedCategory;
   bool _showFavorites = false;
+  bool _isOffline = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    setState(() {
+      _isOffline = connectivityResult == ConnectivityResult.none;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +53,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
             )
             .toList();
+
+    if (_isOffline) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.wifi_off, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'No internet connection',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
