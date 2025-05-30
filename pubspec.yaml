@@ -50,6 +50,7 @@ dependencies:
   cached_network_image: ^3.3.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  connectivity_plus: ^5.0.2
 
   # Add more as needed, e.g., cached_network_image for images
 
