@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   String _sortBy = 'Name';
   final List<String> _sortOptions = ['Name', 'Newest', 'Favorites'];
   String _searchQuery = '';
@@ -95,9 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor:
+          isDark ? const Color(0xFF181A20) : const Color(0xFFF6F7FB),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(90),
         child: Container(
@@ -189,13 +193,24 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Material(
-                elevation: 6,
+                elevation: 8,
                 borderRadius: BorderRadius.circular(18),
+                shadowColor:
+                    isDark ? Colors.black54 : Colors.grey.withOpacity(0.2),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFF6F7FB), Color(0xFFE3E6F3)],
+                    gradient: LinearGradient(
+                      colors:
+                          isDark
+                              ? [
+                                const Color(0xFF23243A),
+                                const Color(0xFF181A20),
+                              ]
+                              : [
+                                const Color(0xFFF6F7FB),
+                                const Color(0xFFE3E6F3),
+                              ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -204,14 +219,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
                             hintText: 'Search recipes...',
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.white54 : Colors.grey,
+                            ),
                             border: InputBorder.none,
                             prefixIcon: Icon(
                               Icons.search,
                               color: Color(0xFF6D5FFD),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 14,
                             ),
@@ -396,16 +417,73 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Animated List of Recipes with Pull-to-Refresh
+            // Animated List of Recipes with Pull-to-Refresh and animated empty state
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshRecipes,
                 child:
                     sortedRecipes.isEmpty
-                        ? const Center(
-                          child: Text(
-                            'No recipes found.',
-                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 800),
+                                curve: Curves.easeInOut,
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color:
+                                      isDark
+                                          ? Colors.white10
+                                          : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(60),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          isDark
+                                              ? Colors.black26
+                                              : Colors.grey.withOpacity(0.15),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.search_off,
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              const Text(
+                                'No recipes found.',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton.icon(
+                                icon: const Icon(
+                                  Icons.settings,
+                                  color: Color(0xFF6D5FFD),
+                                ),
+                                label: const Text(
+                                  'Settings',
+                                  style: TextStyle(color: Color(0xFF6D5FFD)),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SettingsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         )
                         : ListView.builder(
@@ -415,85 +493,123 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           itemCount: sortedRecipes.length,
                           itemBuilder: (context, index) {
-                            return AnimatedContainer(
+                            return TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: 1),
                               duration: Duration(
-                                milliseconds: 400 + (index * 30),
+                                milliseconds: 500 + index * 60,
                               ),
-                              curve: Curves.easeOutCubic,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              child: Dismissible(
-                                key: ValueKey(
-                                  sortedRecipes[index].title +
-                                      sortedRecipes[index].description,
+                              builder: (context, value, child) {
+                                return Opacity(
+                                  opacity: value,
+                                  child: Transform.translate(
+                                    offset: Offset(0, 30 * (1 - value)),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(
+                                  milliseconds: 400 + (index * 30),
                                 ),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent,
-                                    borderRadius: BorderRadius.circular(16),
+                                curve: Curves.easeOutCubic,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: Dismissible(
+                                  key: ValueKey(
+                                    sortedRecipes[index].title +
+                                        sortedRecipes[index].description,
                                   ),
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
+                                  direction: DismissDirection.endToStart,
+                                  background: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.redAccent.withOpacity(
+                                            0.15,
+                                          ),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    child: const Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.delete,
-                                    color: Colors.white,
-                                    size: 32,
-                                  ),
-                                ),
-                                onDismissed: (direction) async {
-                                  final deletedRecipe = sortedRecipes[index];
-                                  final provider = Provider.of<RecipeProvider>(
-                                    context,
-                                    listen: false,
-                                  );
-                                  final realIndex = provider.recipes.indexOf(
-                                    deletedRecipe,
-                                  );
-                                  await provider.deleteRecipe(realIndex);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Recipe deleted'),
-                                      action: SnackBarAction(
-                                        label: 'Undo',
-                                        onPressed: () {
-                                          provider.addRecipe(deletedRecipe);
+                                  onDismissed: (direction) async {
+                                    final deletedRecipe = sortedRecipes[index];
+                                    final provider =
+                                        Provider.of<RecipeProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    final realIndex = provider.recipes.indexOf(
+                                      deletedRecipe,
+                                    );
+                                    await provider.deleteRecipe(realIndex);
+                                    HapticFeedback.mediumImpact();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text('Recipe deleted'),
+                                        action: SnackBarAction(
+                                          label: 'Undo',
+                                          onPressed: () {
+                                            provider.addRecipe(deletedRecipe);
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                    setState(() {});
+                                  },
+                                  child: Hero(
+                                    tag: 'recipe_${sortedRecipes[index].title}',
+                                    child: Material(
+                                      elevation: 4,
+                                      borderRadius: BorderRadius.circular(16),
+                                      shadowColor:
+                                          isDark
+                                              ? Colors.black54
+                                              : Colors.grey.withOpacity(0.15),
+                                      child: RecipeCard(
+                                        recipe: sortedRecipes[index],
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => RecipeDetailScreen(
+                                                    recipe:
+                                                        sortedRecipes[index],
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        onLongPress: () {
+                                          HapticFeedback.selectionClick();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => AddRecipeScreen(
+                                                    recipe:
+                                                        sortedRecipes[index],
+                                                    recipeIndex: recipes
+                                                        .indexOf(
+                                                          sortedRecipes[index],
+                                                        ),
+                                                  ),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),
-                                  );
-                                  setState(() {});
-                                },
-                                child: Hero(
-                                  tag: 'recipe_${sortedRecipes[index].title}',
-                                  child: RecipeCard(
-                                    recipe: sortedRecipes[index],
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (_) => RecipeDetailScreen(
-                                                recipe: sortedRecipes[index],
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                    onLongPress: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (_) => AddRecipeScreen(
-                                                recipe: sortedRecipes[index],
-                                                recipeIndex: recipes.indexOf(
-                                                  sortedRecipes[index],
-                                                ),
-                                              ),
-                                        ),
-                                      );
-                                    },
                                   ),
                                 ),
                               ),
