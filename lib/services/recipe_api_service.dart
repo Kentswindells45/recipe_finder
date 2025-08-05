@@ -13,7 +13,7 @@ class RecipeApiService {
       if (meals == null) return [];
       // Ensure meals is a List before mapping
       if (meals is List) {
-        return meals.map<Recipe>((meal) => Recipe.fromJson(meal) as Recipe).toList();
+        return meals.map<Recipe>((meal) => Recipe.fromJson(meal)).toList();
       }
     }
     return [];
