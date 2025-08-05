@@ -20,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   String _sortBy = 'Name';
   final List<String> _sortOptions = ['Name', 'Newest', 'Favorites'];
   String _searchQuery = '';
